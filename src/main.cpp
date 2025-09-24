@@ -1,69 +1,59 @@
-#include <functional>
-#include <iostream>
 #include <thread>
 #include <SFML/Graphics.hpp>
+#include "Application.h"
 
-#define TXT_PATH L"assets/textures/"
 
-
-void RenderingThread(sf::RenderWindow& window, const std::vector<sf::Drawable*>& drawables);
+void HandleEvents(sf::RenderWindow& window);
+float CalculateDeltaTime();
 
 int main()
 {
 	auto window = std::make_unique<sf::RenderWindow>(sf::VideoMode({ 800, 600 }), "My Window");
-	// Deactivate context in main thread.
-	static_cast<void>(window->setActive(false)); //< See casting reason in RenderingThread().
-
-	sf::Texture txt(TXT_PATH "mam.png");
-	sf::Sprite sprite(txt);
-
-	std::vector<sf::Drawable*> drawables;
-	drawables.reserve(20);
-	drawables.push_back(&sprite);
-
-	std::thread renderThread(&RenderingThread, std::ref(*window), std::ref(drawables));
-
-	sprite.scale({0.5f,0.5f});
+	auto app = std::make_unique<Game::Application>(*window);
 
 
 	while (window->isOpen())
 	{
-		while (const std::optional event = window->pollEvent())
-		{
-			if (event->is<sf::Event::Closed>())
-				window->close();
+		const float deltaTime = CalculateDeltaTime();
 
-			// Handle keyboard input.
-			else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-			{
-				switch (keyPressed->scancode)
-				{
-				case sf::Keyboard::Scan::Escape:
-					window->close();
-				}
-			}
-		}
+		HandleEvents(*window);
+
+		// Handle game logic.
+		app->Input(deltaTime);
+		app->Update(deltaTime);
+		app->Render();
 	}
-
-	renderThread.join();
-	std::cout << "Hello World\n";
 
 	return 0;
 }
 
-void RenderingThread(sf::RenderWindow& window, const std::vector<sf::Drawable*>& drawables)
+void HandleEvents(sf::RenderWindow& window)
 {
-	// Activate the window's context.
-	static_cast<void>(window.setActive(true));//< Cast to VOID to ignore discard warning.
-
-	while (window.isOpen())
+	while (const std::optional event = window.pollEvent())
 	{
-		window.clear();
+		if (event->is<sf::Event::Closed>())
+			window.close();
 
-		// Draw here.
-		for (const auto obj : drawables)
-			window.draw(*obj);
-
-		window.display();
+		// Handle keyboard input.
+		else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			switch (keyPressed->scancode)
+			{
+			case sf::Keyboard::Scan::Escape:
+				window.close();
+			}
+		}
 	}
+}
+
+float CalculateDeltaTime()
+{
+	static auto lastTime = std::chrono::high_resolution_clock::now();
+	const auto currentTime = std::chrono::high_resolution_clock::now();
+
+	const std::chrono::duration<float> delta = currentTime - lastTime;
+
+	lastTime = currentTime;
+
+	return delta.count();
 }
