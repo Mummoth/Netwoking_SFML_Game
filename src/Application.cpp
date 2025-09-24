@@ -1,7 +1,7 @@
 ﻿#include "Application.h"
 #include <iostream>
 
-Game::Application::Application(sf::RenderWindow& window) : m_Window{window}
+Game::Application::Application(sf::RenderWindow& window) : m_Window{&window}
 {
 	m_Drawables.reserve(25);
 
@@ -22,10 +22,10 @@ void Game::Application::Update(float dt)
 
 void Game::Application::Render() const
 {
-	m_Window.clear();
+	m_Window->clear();
 
 	for (const auto obj : m_Drawables)
-		m_Window.draw(*obj);
+		m_Window->draw(*obj);
 
-	m_Window.display();
+	m_Window->display();
 }
