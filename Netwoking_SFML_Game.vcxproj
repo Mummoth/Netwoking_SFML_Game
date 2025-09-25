@@ -137,6 +137,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\fonts\arial.ttf" />
     <Content Include="assets\textures\mam.png" />
   </ItemGroup>
   <ItemGroup>

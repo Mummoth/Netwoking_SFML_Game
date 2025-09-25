@@ -3,7 +3,7 @@
 #include "Application.h"
 
 
-void HandleEvents(sf::RenderWindow& window);
+//void HandleEvents(sf::RenderWindow& window, Game::Application& app, float dt);
 float CalculateDeltaTime();
 
 int main()
@@ -16,10 +16,24 @@ int main()
 	{
 		const float deltaTime = CalculateDeltaTime();
 
-		HandleEvents(*window);
+		//HandleEvents(*window, *app, deltaTime);
+
+		while (const std::optional event = window->pollEvent())
+		{
+			if (event->is<sf::Event::Closed>())
+				window->close();
+
+			// Handle keyboard input.
+			else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+			{
+				if (keyPressed->scancode == sf::Keyboard::Scan::Escape)
+					window->close();
+
+				app->Input(*keyPressed, deltaTime);
+			}
+		}
 
 		// Handle game logic.
-		app->Input(deltaTime);
 		app->Update(deltaTime);
 		app->Render();
 	}
@@ -27,7 +41,7 @@ int main()
 	return 0;
 }
 
-void HandleEvents(sf::RenderWindow& window)
+/*void HandleEvents(sf::RenderWindow& window, Game::Application& app, float dt)
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -42,9 +56,12 @@ void HandleEvents(sf::RenderWindow& window)
 			case sf::Keyboard::Scan::Escape:
 				window.close();
 			}
+
+			app.Input(*keyPressed, dt);
+
 		}
 	}
-}
+}*/
 
 float CalculateDeltaTime()
 {
