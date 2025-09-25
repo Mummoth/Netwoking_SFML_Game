@@ -15,10 +15,10 @@ public:
 	void Render() const;
 
 private:
-	std::vector<sf::Drawable*> m_Drawables;
 	sf::RenderWindow* m_Window;
 
-	sf::Texture m_Txt;
-	std::unique_ptr<sf::Sprite> m_Sprite;
+	sf::Texture m_Txt{};
+	std::unique_ptr<sf::Sprite> m_Sprite{};
+	sf::CircleShape m_Shape1{};
 };
 }
