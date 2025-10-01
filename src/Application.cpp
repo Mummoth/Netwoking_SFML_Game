@@ -21,7 +21,7 @@ Game::Application::Application(sf::RenderWindow& window) : m_Window{&window}
 	m_Text->setPosition({300.0f, 15.0f});
 	m_Text->setString("Welcome to the game!");
 
-	m_Socket = std::make_unique<sf::TcpSocket>();
+	m_ClientSocket = std::make_unique<sf::TcpSocket>();
 	m_Listener.setBlocking(false);
 }
 
@@ -43,6 +43,22 @@ void Game::Application::Update(float dt)
 	{
 		Utils::PrintMsg("Server Starting...", INFO, SERVER);
 		m_ServerThread = std::thread(&Application::RunTcpServer, this);
+	}
+
+	// Try to connect self to the self-hosted server.
+	if (m_ServerThread.joinable() && !m_HasConnected)
+	{
+		sf::Socket::Status status = m_ClientSocket->connect(
+				m_ServerIp, ServerPort, sf::seconds(5));
+		if (status != sf::Socket::Status::Done)
+			Utils::PrintMsg("Error connecting to the server!", ERROR);
+		else if (status == sf::Socket::Status::NotReady)
+			Utils::PrintMsg("Connection timed out.");
+		else if (status == sf::Socket::Status::Done)
+		{
+			Utils::PrintMsg("Connected to the server!");
+			m_HasConnected = true;
+		}
 	}
 }
 
@@ -74,25 +90,19 @@ void Game::Application::RunTcpServer()
 		Utils::PrintMsg("Error binding listener socket!", ERROR, SERVER);
 
 	// TODO:
-	// [] Handle connecting the hosting client on server start up.
+	// [X] Handle connecting the hosting client on server start up.
 	// [] Setup retrieval of other client connections to the server.
 	// [] Setup basic communication between the server and the client.
-
-	/*sf::Socket::Status status = m_Listener.accept(*m_Socket);
-	if (status == sf::Socket::Status::Done)
-	{
-		const std::string message = "Connection accepted from ";
-		// Check get incoming IP and Port and print them in a message.
-		const sf::IpAddress incomingIp = *m_Socket->getRemoteAddress();
-		const unsigned short port = m_Socket->getRemotePort();
-		Utils::PrintMsg(
-				message + incomingIp.toString() + ":" + std::to_string(port),
-				SUCCESS);
-	}*/
 
 
 	while (m_IsHosting)
 	{
+		auto newClient = new sf::TcpSocket;
+		if (m_Listener.accept(*newClient) == sf::Socket::Status::Done)
+			Utils::PrintMsg("A client connected to the server!", INFO, SERVER);
+		else
+			delete newClient;
+
 		sf::sleep(sf::milliseconds(10));
 	}
 }

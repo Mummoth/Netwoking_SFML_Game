@@ -31,7 +31,7 @@ public:
 	void JoinThreads();
 
 public:
-	const int ServerPort = 13080;
+	const unsigned short ServerPort = 13080;
 
 private:
 	/// Run and host a TCP server.
@@ -52,6 +52,7 @@ private:
 	std::atomic<bool> m_IsHosting{false};
 	sf::IpAddress m_ServerIp{127, 0, 0, 1};
 	sf::TcpListener m_Listener{};
-	std::unique_ptr<sf::TcpSocket> m_Socket{};
+	std::unique_ptr<sf::TcpSocket> m_ClientSocket{};
+	bool m_HasConnected{false};
 };
 }
