@@ -37,6 +37,8 @@ private:
 	/// Run and host a TCP server.
 	void RunTcpServer();
 
+	void JoinServer();
+
 private:
 	// --- System Objects ---
 	sf::RenderWindow* m_Window;
@@ -50,9 +52,12 @@ private:
 
 	// --- Networking Objects ---
 	std::atomic<bool> m_IsHosting{false};
+	bool m_HasConnected{false};
+	bool m_CanHost{true};
 	sf::IpAddress m_ServerIp{127, 0, 0, 1};
 	sf::TcpListener m_Listener{};
 	std::unique_ptr<sf::TcpSocket> m_ClientSocket{};
-	bool m_HasConnected{false};
+	std::vector<std::unique_ptr<sf::TcpSocket>> m_Clients{};
+	const short m_MaxClients{2};
 };
 }
