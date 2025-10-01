@@ -5,10 +5,12 @@
 Game::Application::Application(sf::RenderWindow& window) : m_Window{&window}
 {
 	if (!m_Txt.loadFromFile(TXT_PATH "mam.png"))
-		throw std::runtime_error("Error loading a texture from file!\n");
+		Utils::PrintMsg("Failed loading a texture from file!", ERROR, CLIENT,
+						true);
 
 	if (!m_Font.openFromFile(FONT_PATH "arial.ttf"))
-		throw std::runtime_error("Error loading a font from file!\n");
+		Utils::PrintMsg("Failed loading a font from file!", ERROR, CLIENT,
+						true);
 
 	m_Shape1.setRadius(100.0f);
 	m_Shape1.setFillColor({0, 255, 0});
@@ -39,7 +41,7 @@ void Game::Application::Update(float dt)
 {
 	if (m_IsHosting && !m_ServerThread.joinable() && m_Window->isOpen())
 	{
-		Utils::PrintMsg("Server Starting...");
+		Utils::PrintMsg("Server Starting...", INFO, SERVER);
 		m_ServerThread = std::thread(&Application::RunTcpServer, this);
 	}
 }
@@ -66,15 +68,15 @@ void Game::Application::JoinThreads()
 void Game::Application::RunTcpServer()
 {
 	if (m_Listener.listen(ServerPort) == sf::Socket::Status::Done)
-		Utils::PrintMsg("Listening on port " + std::to_string(ServerPort));
+		Utils::PrintMsg("Listening on port " + std::to_string(ServerPort), INFO,
+						SERVER);
 	else
-		Utils::PrintMsg("Error binding listener socket!", ERROR);
+		Utils::PrintMsg("Error binding listener socket!", ERROR, SERVER);
 
 	// TODO:
-	// . Handle connecting the hosting client on server start up.
-	// . Setup retrieval of other client connections to the server.
-	// . Setup basic communication between the server and the client.
-
+	// [] Handle connecting the hosting client on server start up.
+	// [] Setup retrieval of other client connections to the server.
+	// [] Setup basic communication between the server and the client.
 
 	/*sf::Socket::Status status = m_Listener.accept(*m_Socket);
 	if (status == sf::Socket::Status::Done)
@@ -87,6 +89,7 @@ void Game::Application::RunTcpServer()
 				message + incomingIp.toString() + ":" + std::to_string(port),
 				SUCCESS);
 	}*/
+
 
 	while (m_IsHosting)
 	{
