@@ -45,7 +45,7 @@ private:
 	sf::TcpListener m_Listener{};
 	unsigned short m_Port{13080};
 	std::vector<std::unique_ptr<sf::TcpSocket>> m_Clients{};
-	const size_t m_MaxClients{2};
+	const size_t m_MaxClients{1};
 
 	// --- Multi-threading Objects ---
 	std::thread m_Thread{};

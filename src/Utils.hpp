@@ -34,6 +34,10 @@ public:
 						 const SourceType sType = CLIENT,
 						 bool terminateOnError = false)
 	{
+		// Lock this thread for console output.
+		static std::mutex coutMutex;
+		std::lock_guard lock(coutMutex);
+
 		const auto now = std::chrono::system_clock::now();
 		const std::time_t currentTime =
 				std::chrono::system_clock::to_time_t(now);
