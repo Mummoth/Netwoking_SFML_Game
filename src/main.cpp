@@ -1,6 +1,5 @@
 #include <thread>
 #include <SFML/Graphics.hpp>
-
 #include "Application.h"
 
 float CalculateDeltaTime();
@@ -20,7 +19,7 @@ int main()
 		{
 			if (event->is<sf::Event::Closed>())
 			{
-				app->JoinThreads();
+				app->GetServer().Stop();
 				window->close();
 			}
 
@@ -30,7 +29,7 @@ int main()
 			{
 				if (keyPressed->scancode == sf::Keyboard::Scan::Escape)
 				{
-					app->JoinThreads();
+					app->GetServer().Stop();
 					window->close();
 				}
 

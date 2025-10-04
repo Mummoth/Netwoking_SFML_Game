@@ -135,6 +135,7 @@
     <ItemGroup>
         <ClCompile Include="src\Application.cpp"/>
         <ClCompile Include="src\main.cpp"/>
+        <ClCompile Include="src\Server.cpp"/>
     </ItemGroup>
     <ItemGroup>
         <Content Include="assets\fonts\arial.ttf"/>
@@ -142,6 +143,7 @@
     </ItemGroup>
     <ItemGroup>
         <ClInclude Include="src\Application.h"/>
+        <ClInclude Include="src\Server.h"/>
         <ClInclude Include="src\Utils.hpp"/>
     </ItemGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
