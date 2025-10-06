@@ -40,11 +40,6 @@ void Game::Server::Run()
 	else
 		Utils::PrintMsg("Error binding listener socket!", ERROR, SERVER);
 
-	// TODO:
-	// [X] Handle connecting the hosting client on server start up.
-	// [X] Setup retrieval of other client connections to the server.
-	// [] Setup basic communication between the server and the client.
-
 	// Main loop.
 	while (m_IsRunning.load())
 	{
@@ -78,6 +73,10 @@ void Game::Server::Run()
 											getRemotePort();
 				message += incomingIp.toString() + ":" + std::to_string(port);
 				Utils::PrintMsg(message, SUCCESS, SERVER);
+
+				sf::Packet packet;
+				packet << "Welcome to the server!";
+				static_cast<void>(m_Clients.at(socketPos).Socket->send(packet));
 
 				if (m_Clients.size() >= m_MaxClients)
 					Utils::PrintMsg("The server reached max capacity!", INFO,
@@ -114,10 +113,17 @@ bool Game::Server::Join(sf::TcpSocket& client, const sf::IpAddress serverIp,
 	const sf::Socket::Status status = client.connect(
 			serverIp, m_Port, sf::seconds(5));
 
+	sf::Packet packet;
 	switch (status)
 	{
 	case sf::Socket::Status::Done:
 		Utils::PrintMsg("Connected to the server!");
+		if (client.receive(packet) == sf::Socket::Status::Done)
+		{
+			std::string msg;
+			packet >> msg;
+			Utils::PrintMsg(msg);
+		}
 		return true;
 	case sf::Socket::Status::NotReady:
 		Utils::PrintMsg("Connection timed out.", WARNING);
