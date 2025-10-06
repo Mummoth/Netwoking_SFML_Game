@@ -27,7 +27,7 @@ Game::Application::Application(sf::RenderWindow& window) : m_Window{&window}
 
 void Game::Application::Input(const sf::Event::KeyPressed& keyPressed, float dt)
 {
-	if (keyPressed.scancode == sf::Keyboard::Scan::Num1)
+	if (keyPressed.scancode == sf::Keyboard::Scan::Num1 && m_CanHost)
 	{
 		m_Text->setString("You are currently hosting a game!");
 		m_Shape1.setOutlineColor(sf::Color::Red);
@@ -45,7 +45,7 @@ void Game::Application::Input(const sf::Event::KeyPressed& keyPressed, float dt)
 			m_CanHost = true;
 		}
 	}
-	else if (keyPressed.scancode == sf::Keyboard::Scan::Num2)
+	else if (keyPressed.scancode == sf::Keyboard::Scan::Num2 && !m_HasConnected)
 	{
 		m_Text->setString("You have joined a server!");
 
@@ -64,7 +64,11 @@ void Game::Application::Render() const
 {
 	m_Window->clear();
 
-	m_Window->draw(m_Shape1);
+	// Render server visuals.
+	if (m_Server->IsRunning())
+		m_Server->Render(*m_Window);
+
+	//m_Window->draw(m_Shape1);
 	m_Window->draw(*m_Text);
 
 	m_Window->display();

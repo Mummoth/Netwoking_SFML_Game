@@ -1,10 +1,18 @@
 ﻿#pragma once
 #include <mutex>
 #include <thread>
+#include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
 
 namespace Game
 {
+struct ClientInfo
+{
+	std::unique_ptr<sf::TcpSocket> Socket;
+	sf::Color Colour;
+	sf::Vector2f Position;
+};
+
 class Server
 {
 public:
@@ -21,6 +29,9 @@ public:
 
 	/// Run and host a TCP server.
 	void Run();
+
+	/// Render server object.
+	void Render(sf::RenderWindow& window);
 
 	/// Join the client to the desired server.
 	/// @param client The client socket to connect.
@@ -44,11 +55,12 @@ private:
 	// --- Networking Objects ---
 	sf::TcpListener m_Listener{};
 	unsigned short m_Port{13080};
-	std::vector<std::unique_ptr<sf::TcpSocket>> m_Clients{};
-	const size_t m_MaxClients{1};
+	std::vector<ClientInfo> m_Clients{};
+	const size_t m_MaxClients{2};
 
 	// --- Multi-threading Objects ---
 	std::thread m_Thread{};
 	std::atomic<bool> m_IsRunning{false};
+	std::mutex m_ClientMutex{};
 };
 }

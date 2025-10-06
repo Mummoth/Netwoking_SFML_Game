@@ -1,8 +1,10 @@
 ﻿#include "Server.h"
+#include <random>
 #include "Utils.hpp"
 
 Game::Server::Server()
 {
+	std::srand(static_cast<unsigned>(std::time(nullptr)));
 	m_Listener.setBlocking(false);
 	m_Clients.reserve(20);
 }
@@ -49,20 +51,31 @@ void Game::Server::Run()
 		// Handle connecting clients.
 		if (m_Clients.size() < m_MaxClients)
 		{
-			auto newClient = std::make_unique<sf::TcpSocket>();
-			if (m_Listener.accept(*newClient) == sf::Socket::Status::Done)
+			auto clientSocket = std::make_unique<sf::TcpSocket>();
+			if (m_Listener.accept(*clientSocket) == sf::Socket::Status::Done)
 			{
 				Utils::PrintMsg("A client connected to the server!", INFO,
 								SERVER);
-				m_Clients.push_back(std::move(newClient));
-				const auto socketPos = m_Clients.size() - 1;
 
+				ClientInfo newClient;
+				newClient.Socket = std::move(clientSocket);
+				newClient.Position = {50.0f * m_Clients.size(), 50.0f};
+				newClient.Colour = sf::Color(std::rand() % 256,
+											 std::rand() % 256,
+											 std::rand() % 256);
+				{
+					std::lock_guard lock(m_ClientMutex);
+					m_Clients.push_back(std::move(newClient));
+				}
+
+				const auto socketPos = m_Clients.size() - 1;
 				std::string message = "Connection accepted from ";
 
 				// Check get incoming IP and Port and print them in a message.
-				sf::IpAddress incomingIp = *m_Clients.at(socketPos)->
+				sf::IpAddress incomingIp = *m_Clients.at(socketPos).Socket->
 						getRemoteAddress();
-				const auto port = m_Clients.at(socketPos)->getRemotePort();
+				const auto port = m_Clients.at(socketPos).Socket->
+											getRemotePort();
 				message += incomingIp.toString() + ":" + std::to_string(port);
 				Utils::PrintMsg(message, SUCCESS, SERVER);
 
@@ -78,6 +91,18 @@ void Game::Server::Run()
 
 
 		sf::sleep(sf::milliseconds(10));
+	}
+}
+
+void Game::Server::Render(sf::RenderWindow& window)
+{
+	std::lock_guard lock(m_ClientMutex);
+	for (const auto& client : m_Clients)
+	{
+		sf::RectangleShape square({40.0f, 40.0f});
+		square.setPosition(client.Position);
+		square.setFillColor(client.Colour);
+		window.draw(square);
 	}
 }
 
