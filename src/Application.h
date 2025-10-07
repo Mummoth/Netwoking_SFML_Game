@@ -2,8 +2,8 @@
 #include <thread>
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
+#include "Client.h"
 #include "Server.h"
-#include "Utils.hpp"
 
 namespace Game
 {
@@ -26,17 +26,13 @@ private:
 	// --- System Objects ---
 	sf::RenderWindow* m_Window;
 	std::unique_ptr<Server> m_Server{};
+	std::unique_ptr<Client> m_Client{};
 
 	// --- Game Objects ---
 	sf::Font m_Font{};
 	std::unique_ptr<sf::Text> m_Text{};
-	sf::Texture m_Txt{};
-	sf::CircleShape m_Shape1{};
 
 	// --- Networking Objects ---
-	bool m_HasConnected{false};
-	bool m_CanHost{true};
 	sf::IpAddress m_ServerIp{127, 0, 0, 1};
-	std::unique_ptr<sf::TcpSocket> m_ClientSocket{};
 };
 }

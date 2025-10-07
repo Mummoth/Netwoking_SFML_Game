@@ -93,7 +93,7 @@ void Game::Server::Run()
 	}
 }
 
-void Game::Server::Render(sf::RenderWindow& window)
+/*void Game::Server::Render(sf::RenderWindow& window)
 {
 	std::lock_guard lock(m_ClientMutex);
 	for (const auto& client : m_Clients)
@@ -103,33 +103,4 @@ void Game::Server::Render(sf::RenderWindow& window)
 		square.setFillColor(client.Colour);
 		window.draw(square);
 	}
-}
-
-bool Game::Server::Join(sf::TcpSocket& client, const sf::IpAddress serverIp,
-						const std::optional<unsigned short> port)
-{
-	m_Port = port.value_or(m_Port); //< Check to what server to connect to.
-
-	const sf::Socket::Status status = client.connect(
-			serverIp, m_Port, sf::seconds(5));
-
-	sf::Packet packet;
-	switch (status)
-	{
-	case sf::Socket::Status::Done:
-		Utils::PrintMsg("Connected to the server!");
-		if (client.receive(packet) == sf::Socket::Status::Done)
-		{
-			std::string msg;
-			packet >> msg;
-			Utils::PrintMsg(msg);
-		}
-		return true;
-	case sf::Socket::Status::NotReady:
-		Utils::PrintMsg("Connection timed out.", WARNING);
-		return false;
-	default:
-		Utils::PrintMsg("Error connecting to the server!", ERROR);
-		return false;
-	}
-}
+}*/

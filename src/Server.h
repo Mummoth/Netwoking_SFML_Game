@@ -31,16 +31,7 @@ public:
 	void Run();
 
 	/// Render server object.
-	void Render(sf::RenderWindow& window);
-
-	/// Join the client to the desired server.
-	/// @param client The client socket to connect.
-	/// @param serverIp The IP of the desired server.
-	/// @param port The server port to use to connect to the desired server,
-	/// if NULL, it uses the server's default port.
-	/// @return Returns whether the client connected successfully or not.
-	bool Join(sf::TcpSocket& client, sf::IpAddress serverIp,
-			  std::optional<unsigned short> port = std::nullopt);
+	//void Render(sf::RenderWindow& window);
 
 	/// @return If the server is actively running or not.
 	bool IsRunning() const { return m_IsRunning.load(); }

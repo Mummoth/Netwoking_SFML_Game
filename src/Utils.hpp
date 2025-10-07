@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <iostream>
+#include <mutex>
 
 #define ASSETS_PATH L"assets/"
 #define TXT_PATH L"assets/textures/"
@@ -45,8 +46,14 @@ public:
 		// Cast to VOID to ignore return.
 		static_cast<void>(localtime_s(&localTime, &currentTime));
 
+		// Extract microseconds.
+		const auto micro = std::chrono::duration_cast<
+							   std::chrono::microseconds>(
+								   now.time_since_epoch()) % 1'000'000;
+
 		std::ostringstream timestamp;
-		timestamp << std::put_time(&localTime, "%d-%m-%Y %H:%M:%S");
+		timestamp << std::put_time(&localTime, "%d-%m-%Y %H:%M:%S")
+				<< ':' << std::setfill('0') << std::setw(6) << micro.count();
 
 		// Source header.
 		std::string sourceText;
@@ -78,10 +85,11 @@ public:
 		const std::string reset = "\033[0m";
 
 		// Print message.
-		std::cout << "[" << gold << std::setw(6) << std::left << sourceText
-				<< reset << "]  "
+		std::cout << "[" << gold << std::setw(sourceText.size()) << std::left
+				<< sourceText << reset << "]  "
 				<< severityColour
-				<< std::setw(20) << std::left << timestamp.str() << "    "
+				<< std::setw(timestamp.str().size()) << std::left
+				<< timestamp.str() << "    "
 				<< msg << reset << '\n';
 
 		// If the terminate flag is set, and it's an ERROR, stop the program.
