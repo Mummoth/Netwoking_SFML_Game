@@ -47,10 +47,10 @@ private:
 	sf::TcpListener m_Listener{};
 	unsigned short m_Port{13080};
 	std::vector<ClientInfo> m_Clients{};
-	const size_t m_MaxClients{1};
+	const size_t m_MaxClients{2};
 
 	// --- Multi-threading Objects ---
-	std::thread m_Thread{};
+	std::thread m_ServerThread{};
 	std::atomic<bool> m_IsRunning{false};
 	std::mutex m_ClientMutex{};
 };

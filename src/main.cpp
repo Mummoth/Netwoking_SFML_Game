@@ -19,6 +19,7 @@ int main()
 		{
 			if (event->is<sf::Event::Closed>())
 			{
+				app->GetClient().Disconnect();
 				app->GetServer().Stop();
 				window->close();
 			}
@@ -29,6 +30,7 @@ int main()
 			{
 				if (keyPressed->scancode == sf::Keyboard::Scan::Escape)
 				{
+					app->GetClient().Disconnect();
 					app->GetServer().Stop();
 					window->close();
 				}

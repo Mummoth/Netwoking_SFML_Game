@@ -1,5 +1,6 @@
 ﻿#include "Application.h"
 #include <iostream>
+#include "Packet.hpp"
 #include "Utils.hpp"
 
 Game::Application::Application(sf::RenderWindow& window) : m_Window{&window}
@@ -39,7 +40,10 @@ void Game::Application::Input(const sf::Event::KeyPressed& keyPressed, float dt)
 			m_Client->SetHosting(true);
 		}
 		else
+		{
+			m_Client->StartListening(m_OtherClients);
 			m_Text->setString("You are currently hosting a game!");
+		}
 	}
 	else if (keyPressed.scancode == sf::Keyboard::Scan::Num2 && !m_Client->
 			 IsConnected())
@@ -50,12 +54,22 @@ void Game::Application::Input(const sf::Event::KeyPressed& keyPressed, float dt)
 		if (!m_Client->IsConnected())
 			m_Client->SetHosting(true);
 		else
+		{
+			m_Client->StartListening(m_OtherClients);
 			m_Text->setString("You have joined a server!");
+		}
 	}
 }
 
 void Game::Application::Update(float dt)
-{}
+{
+	// Clean-up listen thread if no server.
+	if ((!m_Server->IsRunning() || !m_Client->IsConnected())
+		&& m_Client->IsListening())
+		m_Client->StopListening();
+
+	m_Client->ApplyPendingState();
+}
 
 void Game::Application::Render() const
 {
@@ -64,8 +78,10 @@ void Game::Application::Render() const
 	// Render main client.
 	m_Client->Render(*m_Window);
 
-	//m_Window->draw(m_Shape1);
+	// Render application.
 	m_Window->draw(*m_Text);
+
+	// Render server-side.
 
 	m_Window->display();
 }

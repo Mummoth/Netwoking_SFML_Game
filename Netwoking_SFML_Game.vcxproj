@@ -145,6 +145,7 @@
     <ItemGroup>
         <ClInclude Include="src\Application.h"/>
         <ClInclude Include="src\Client.h"/>
+        <ClInclude Include="src\Packet.hpp"/>
         <ClInclude Include="src\Server.h"/>
         <ClInclude Include="src\Utils.hpp"/>
     </ItemGroup>

@@ -19,8 +19,11 @@ public:
 	/// Render application's game objects.
 	void Render() const;
 
-	/// @return The reference to the application's Server object.
+	/// @return Returns the reference to the application's Server object.
 	Server& GetServer() const { return *m_Server; }
+
+	/// @return Returns the reference to the application's Client object.
+	Client& GetClient() const { return *m_Client; }
 
 private:
 	// --- System Objects ---
@@ -34,5 +37,6 @@ private:
 
 	// --- Networking Objects ---
 	sf::IpAddress m_ServerIp{127, 0, 0, 1};
+	std::atomic<std::uint16_t> m_OtherClients{0};
 };
 }

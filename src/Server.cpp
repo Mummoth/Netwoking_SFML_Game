@@ -1,5 +1,6 @@
 ﻿#include "Server.h"
 #include <random>
+#include "Packet.hpp"
 #include "Utils.hpp"
 
 Game::Server::Server()
@@ -15,14 +16,14 @@ void Game::Server::Start(const std::optional<unsigned short> port)
 	Utils::PrintMsg("Server Starting...", INFO, SERVER);
 
 	m_Port = port.value_or(m_Port);
-	m_Thread = std::thread(&Server::Run, this);
+	m_ServerThread = std::thread(&Server::Run, this);
 }
 
 void Game::Server::Stop()
 {
 	m_IsRunning.store(false);
-	if (m_Thread.joinable())
-		m_Thread.join();
+	if (m_ServerThread.joinable())
+		m_ServerThread.join();
 }
 
 void Game::Server::Run()
@@ -47,60 +48,101 @@ void Game::Server::Run()
 		if (m_Clients.size() < m_MaxClients)
 		{
 			auto clientSocket = std::make_unique<sf::TcpSocket>();
-			if (m_Listener.accept(*clientSocket) == sf::Socket::Status::Done)
+			switch (m_Listener.accept(*clientSocket))
 			{
-				Utils::PrintMsg("A client connected to the server!", INFO,
-								SERVER);
-
-				ClientInfo newClient;
-				newClient.Socket = std::move(clientSocket);
-				newClient.Position = {50.0f * m_Clients.size(), 50.0f};
-				newClient.Colour = sf::Color(std::rand() % 256,
-											 std::rand() % 256,
-											 std::rand() % 256);
+			case sf::Socket::Status::Done:
 				{
-					std::lock_guard lock(m_ClientMutex);
-					m_Clients.push_back(std::move(newClient));
-				}
-
-				const auto socketPos = m_Clients.size() - 1;
-				std::string message = "Connection accepted from ";
-
-				// Check get incoming IP and Port and print them in a message.
-				sf::IpAddress incomingIp = *m_Clients.at(socketPos).Socket->
-						getRemoteAddress();
-				const auto port = m_Clients.at(socketPos).Socket->
-											getRemotePort();
-				message += incomingIp.toString() + ":" + std::to_string(port);
-				Utils::PrintMsg(message, SUCCESS, SERVER);
-
-				sf::Packet packet;
-				packet << "Welcome to the server!";
-				static_cast<void>(m_Clients.at(socketPos).Socket->send(packet));
-
-				if (m_Clients.size() >= m_MaxClients)
-					Utils::PrintMsg("The server reached max capacity!", INFO,
+					Utils::PrintMsg("A client connected to the server!", INFO,
 									SERVER);
-			}
-			else
+
+					// Wait for client to send its colour.
+					sf::Packet receivedPacket;
+					sf::Color clientColour;
+					if (clientSocket->receive(receivedPacket) ==
+						sf::Socket::Status::Done)
+					{
+						std::uint8_t packetType;
+						receivedPacket >> packetType;
+						if (static_cast<PacketType>(packetType) ==
+							PacketType::PLAYER_CONNECT)
+						{
+							uint32_t colourInt;
+							receivedPacket >> colourInt;
+							clientColour = sf::Color(colourInt);
+							receivedPacket.clear();
+						}
+					}
+
+					// Construct new client info object.
+					ClientInfo newClient{};
+					newClient.Socket = std::move(clientSocket);
+					newClient.Position = {50.0f * m_Clients.size(), 50.0f};
+					newClient.Colour = clientColour;
+					{
+						std::lock_guard lock(m_ClientMutex);
+						m_Clients.push_back(std::move(newClient));
+					}
+
+					// Print out a server message.
+					std::string message = "Connection accepted from ";
+
+					// Check get incoming IP and Port and print them in a message.
+					const ClientInfo& clientInfo = m_Clients.at(
+							m_Clients.size() - 1);
+					sf::IpAddress incomingIp = *clientInfo.Socket->
+							getRemoteAddress();
+					const auto port = clientInfo.Socket->getRemotePort();
+					message += incomingIp.toString() + ":" + std::to_string(
+							port);
+					Utils::PrintMsg(message, SUCCESS, SERVER);
+
+					// Send a welcome message to the client.
+					sf::Packet welcomePacket;
+					welcomePacket << static_cast<std::uint8_t>(
+						PacketType::PLAYER_MESSAGE);
+					welcomePacket << "Welcome to the server!";
+					static_cast<void>(clientInfo.Socket->send(welcomePacket));
+
+					// Broadcast all clients' positions & colours to everyone.
+					sf::Packet updatePacket;
+					updatePacket << static_cast<std::uint8_t>(
+						PacketType::PLAYER_LIST);
+					updatePacket << static_cast<std::uint16_t>(m_Clients.
+						size());
+
+					updatePacket << clientInfo.Colour.toInteger();
+					updatePacket << clientInfo.Position.x << clientInfo.Position
+							.y;
+
+					/*for (const auto& client : m_Clients)
+					{
+						updatePacket << client.Colour.toInteger();
+						updatePacket << client.Position.x << client.Position.y;
+					}*/
+
+					// Cast to VOID to ignore return value.
+					//static_cast<void>(clientInfo.Socket->send(updatePacket));
+					/*for (const auto& client : m_Clients)
+						static_cast<void>(client.Socket->send(updatePacket));*/
+
+
+					// Check if the server is at max capacity.
+					if (m_Clients.size() >= m_MaxClients)
+					{
+						Utils::PrintMsg("The server reached max capacity!",
+										WARNING,
+										SERVER);
+						m_Listener.close();
+					}
+					break;
+				}
+			case sf::Socket::Status::Error:
 				Utils::PrintMsg("Error accepting connection!", ERROR, SERVER);
+				break;
+			}
 		}
-		else
-			m_Listener.close();
 
 
 		sf::sleep(sf::milliseconds(10));
 	}
 }
-
-/*void Game::Server::Render(sf::RenderWindow& window)
-{
-	std::lock_guard lock(m_ClientMutex);
-	for (const auto& client : m_Clients)
-	{
-		sf::RectangleShape square({40.0f, 40.0f});
-		square.setPosition(client.Position);
-		square.setFillColor(client.Colour);
-		window.draw(square);
-	}
-}*/
