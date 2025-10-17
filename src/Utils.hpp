@@ -1,10 +1,11 @@
 ﻿#pragma once
+#include <chrono>
 #include <iostream>
 #include <mutex>
 
 #define ASSETS_PATH L"assets/"
-#define TXT_PATH L"assets/textures/"
-#define FONT_PATH L"assets/fonts/"
+#define TXT_PATH ASSETS_PATH L"textures/"
+#define FONT_PATH ASSETS_PATH L"fonts/"
 
 namespace Game
 {
@@ -31,9 +32,10 @@ public:
 	/// @param sType The source of the message. Defaults to CLIENT.
 	/// @param terminateOnError A flag for whether to terminate the application
 	/// if an error occurs. Defaults to FALSE.
-	static void PrintMsg(const std::string& msg, const MessageType mType = INFO,
+	static void PrintMsg(const std::string& msg,
+						 const MessageType mType = INFO,
 						 const SourceType sType = CLIENT,
-						 bool terminateOnError = false)
+						 const bool terminateOnError = false)
 	{
 		// Lock this thread for console output.
 		static std::mutex coutMutex;

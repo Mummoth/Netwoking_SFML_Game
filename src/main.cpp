@@ -1,14 +1,12 @@
-#include <thread>
 #include <SFML/Graphics.hpp>
-#include "Application.h"
 
 float CalculateDeltaTime();
 
 int main()
 {
-	auto window = std::make_unique<sf::RenderWindow>();
+	const auto window = std::make_unique<sf::RenderWindow>();
 	window->create(sf::VideoMode({800, 600}), "My Window");
-	auto app = std::make_unique<Game::Application>(*window);
+	window->setFramerateLimit(60);
 
 
 	while (window->isOpen())
@@ -19,8 +17,6 @@ int main()
 		{
 			if (event->is<sf::Event::Closed>())
 			{
-				app->GetClient().Disconnect();
-				app->GetServer().Stop();
 				window->close();
 			}
 
@@ -30,18 +26,10 @@ int main()
 			{
 				if (keyPressed->scancode == sf::Keyboard::Scan::Escape)
 				{
-					app->GetClient().Disconnect();
-					app->GetServer().Stop();
 					window->close();
 				}
-
-				app->Input(*keyPressed, deltaTime);
 			}
 		}
-
-		// Handle game logic.
-		app->Update(deltaTime);
-		app->Render();
 	}
 
 	return 0;
